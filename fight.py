@@ -52,13 +52,13 @@ def battle_window():
                     battle_screen.fill((0, 0, 0))
                     dice_roll = roll_dice()
                     font = pygame.font.Font(None, 36)
-                    text = font.render("Player rolled {}".format(dice_roll), 1, (255, 255, 255))
+                    text = font.render("Игрок выбил {}".format(dice_roll), 1, (255, 255, 255))
                     battle_screen.blit(text, (500, 250))
-                    text = font.render("monster rolled {}".format(dice_roll), 1, (255, 255, 255))
+                    text = font.render("Монстр выбил {}".format(dice_roll), 1, (255, 255, 255))
                     battle_screen.blit(text, (100, 250))
 
                     # Добавляем текст о результате боя
-                    result_text = font.render("Player wins the battle", 1, (255, 255, 255))
+                    result_text = font.render("Игрок выйграл в этой битве", 1, (255, 255, 255))
                     battle_screen.blit(result_text, (250, 350))
 
         new_width, new_height = 100, 150  # Установите здесь нужные вам размеры

@@ -8,6 +8,22 @@ screen = pygame.display.set_mode((800, 600))
 # Создание прямоугольника для кнопки
 button_rect = pygame.Rect(350, 450, 100, 50)
 
+def load_image(name, color_key=None):
+    fullname = os.path.join('data', name)
+    try:
+        image = pygame.image.load(fullname).convert()
+    except pygame.error as message:
+        print('Cannot load image:', name)
+        raise SystemExit(message)
+
+    if color_key is not None:
+        if color_key == -1:
+            color_key = image.get_at((0, 0))
+        image.set_colorkey(color_key)
+    else:
+        image = image.convert_alpha()
+    return image
+
 
 def roll_dice():
     global dice_roll
@@ -28,6 +44,8 @@ def battle_window():
     # Создание нового окна
     battle_screen = pygame.display.set_mode((800, 600))
 
+    square_color = (0, 0, 0)
+
     # Создание прямоугольника для кнопки
     battle_button_rect = pygame.Rect(450, 480, 207, 30)  # Увеличиваем ширину и перемещаем кнопку направо
 
@@ -39,12 +57,12 @@ def battle_window():
     button_text2 = font.render('не бросать кости', True, (0, 0, 0))
 
     # Загрузка изображений монстра
-    monster_images = [pygame.image.load('pechenka1.jpg').convert_alpha(),
-                      pygame.image.load('pechenka2.jpg').convert_alpha(),
-                      pygame.image.load('pechenka3.jpg').convert_alpha(),
-                      pygame.image.load('pechenka4.jpg').convert_alpha(),
-                      pygame.image.load('pechenka5.jpg').convert_alpha(),
-                      pygame.image.load('pechenka6.jpg').convert_alpha(), ]
+    monster_images = [load_image('monster_walk.png'),
+                      load_image('monster_walk1.png'),
+                      load_image('monster_walk2.png'),
+                      load_image('monster_walk3.png'),
+                      load_image('monster_walk4.png'),
+                      load_image('monster_walk5.png'), ]
 
     # Индекс текущего изображения
     current_image = 0
@@ -59,58 +77,66 @@ def battle_window():
     # Скорость движения монстра
     speed = 1
 
-    flag = False
-    flag_monstr = False
-
+    flag = True
+    attemps = 1
+    player_total = 0
     while True:
-
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN and not flag or not flag_monstr:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-                if nobattle_button_rect.collidepoint(mouse_pos) and not flag or not flag_monstr:
-                    # Добавляем текст о результате боя
-                    result_text = font.render("Игрок выйграл в этой битве", 1, (255, 255, 255))
-                    battle_screen.blit(result_text, (250, 350))
-                    flag = True
-                elif battle_button_rect.collidepoint(mouse_pos) and not flag or not flag_monstr:
+                if battle_button_rect.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0] and attemps <= 2 and flag:
                     battle_screen.fill((0, 0, 0))
                     dice_roll = roll_dice()
-                    player_total += dice_roll
                     dice_roll_monster = roll_dice_monster()
-                    monster_total += dice_roll_monster
                     font = pygame.font.Font(None, 36)
-                    if monster_total > 6:
-                        flag_monstr = True
-                    if player_total > 6:
-                        flag = True
-                        text = font.render("Игрок выбил {}".format(dice_roll), 1, (255, 255, 255))
-                        battle_screen.blit(text, (500, 250))
-                    else:
-                        text = font.render("Игрок выбил {}".format(dice_roll), 1, (255, 255, 255))
-                        battle_screen.blit(text, (500, 250))
-                    if monster_total <= 3:
+
+                    text = font.render("Игрок выбил {}".format(dice_roll), 1, (255, 255, 255))
+                    battle_screen.blit(text, (500, 250))
+                    player_total = dice_roll
+                    print(attemps)
+                    if monster_total <= player_total or attemps == 1:
                         text = font.render("Монстр выбил {}".format(dice_roll_monster), 1, (255, 255, 255))
                         battle_screen.blit(text, (100, 250))
+                        monster_total = dice_roll_monster
+                        print(attemps)
                     else:
                         text = font.render("Монстр решил не бросать кубики", 1, (255, 255, 255))
                         battle_screen.blit(text, (50, 250))
-                elif flag:
-                    result_text = font.render("Монстр выйграл в этой битве", 1, (255, 255, 255))
-                    battle_screen.blit(result_text, (250, 350))
-                    break
-                elif flag_monstr:
-                    result_text = font.render("Игрок выйграл в этой битве", 1, (255, 255, 255))
-                    battle_screen.blit(result_text, (250, 350))
-                    break
+                    attemps += 1
+                    player_total_text = font.render("Результат игрока {}".format(player_total), 1, (255, 255, 255))
+                    battle_screen.blit(player_total_text, (500, 300))
+                    monster_total_text = font.render("Результат монстра {}".format(monster_total), 1, (255, 255, 255))
+                    battle_screen.blit(monster_total_text, (100, 300))
+                if nobattle_button_rect.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0] and player_total != 0 or attemps == 3:
+                    # Добавляем текст о результате боя
+                    if monster_total <= player_total and attemps < 3:
+                        dice_roll_monster = roll_dice_monster()
+                        pygame.draw.rect(screen, square_color, pygame.Rect((50, 250), (300, 100)))
+                        text = font.render("Монстр выбил {}".format(dice_roll_monster), 1, (255, 255, 255))
+                        battle_screen.blit(text, (100, 250))
+                        monster_total = dice_roll_monster
+                        monster_total_text = font.render("Результат монстра {}".format(monster_total), 1,
+                                                         (255, 255, 255))
+                        battle_screen.blit(monster_total_text, (100, 300))
 
-            player_total_text = font.render("Общая сумма очков игрока: {}".format(player_total), 1, (255, 255, 255))
-            battle_screen.blit(player_total_text, (420, 300))
-            monster_total_text = font.render("Общая сумма очков монстра: {}".format(monster_total), 1, (255, 255, 255))
-            battle_screen.blit(monster_total_text, (20, 300))
+                    if monster_total > player_total:
+                        monster_winner_text = font.render("Монстр победил", 1,
+                                                         (255, 255, 255))
+                        battle_screen.blit(monster_winner_text, (300, 375))
+                    elif player_total > monster_total:
+                        player_winner_text = font.render("Игрок победил", 1,
+                                                          (255, 255, 255))
+                        battle_screen.blit(player_winner_text, (300, 375))
+                    else:
+                        nichia = font.render("Победателя нет", 1,
+                                                         (255, 255, 255))
+                        battle_screen.blit(nichia, (300, 375))
+                    flag = False
+
+                    attemps += 1
         new_width, new_height = 100, 150  # Установите здесь нужные вам размеры
         resized_monster_image = pygame.transform.smoothscale(monster_images[current_image], (new_width, new_height))
 

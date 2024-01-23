@@ -14,7 +14,7 @@ if end_event:
     screen.blit(text, text_rect)
 
     pygame.display.update()
-
+    # проверка на существование, если это не первая игра 
     try:
         with open('results.txt', 'r') as f:
             count = len(list(map(str.strip, f.readlines())))

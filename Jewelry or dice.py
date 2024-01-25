@@ -416,15 +416,17 @@ def first_level():
         all_sprites.draw(SCREEN)
         pygame.display.update()
 
+
+
         monser_battle = pygame.sprite.spritecollide(player, monser_list, True)
         if monser_battle:
             a = battle_window()
-            pygame.display.set_mode((1200, 1700))
+            pygame.display.set_mode((1275, 1700))
             if a:
                 score += 200
             else:
                 score -= 100
-            continue
+
 
         player_coin = pygame.sprite.spritecollide(player, coins, True)
         if player_coin:
@@ -539,6 +541,7 @@ def second_level():
                 pygame.sprite.collide_rect(monster, m) for m in all_sprites if isinstance(m, Monster)):
             monster.rect.x = random.randint(10, 1260)
             monster.rect.y = random.randint(10, 710)
+        monser_list.add(monster)
         all_sprites.add(monster)
 
     while True:
@@ -551,12 +554,11 @@ def second_level():
         monser_battle = pygame.sprite.spritecollide(player, monser_list, True)
         if monser_battle:
             a = battle_window()
-            pygame.display.set_mode((1200, 1700))
+            pygame.display.set_mode((1275, 1700))
             if a:
                 score += 200
             else:
                 score -= 100
-            continue
 
         player_coin = pygame.sprite.spritecollide(player, coins, True)
         if player_coin:
